@@ -125,7 +125,7 @@ D3DClass::D3DClass(_In_ HWND WindowHandle,
     D3D11_RASTERIZER_DESC rasterizerStateDesc = {};
     rasterizerStateDesc.FillMode = D3D11_FILL_SOLID;
     rasterizerStateDesc.CullMode = D3D11_CULL_BACK;
-    rasterizerStateDesc.FrontCounterClockwise = false;
+    rasterizerStateDesc.FrontCounterClockwise = true;
     rasterizerStateDesc.DepthBias = 0;
     rasterizerStateDesc.DepthBiasClamp = 0.0f;
     rasterizerStateDesc.SlopeScaledDepthBias = 0.0f;
@@ -139,7 +139,7 @@ D3DClass::D3DClass(_In_ HWND WindowHandle,
     
     
     // make projection transform matrix
-    XMMATRIX ProjectionMatrix = XMMatrixPerspectiveFovLH(YFovAngle, (float)ScreenWidth/(float)ScreenHeight, ZNearest, ZFarthest);
+    XMMATRIX ProjectionMatrix = XMMatrixPerspectiveFovRH(YFovAngle, (float)ScreenWidth/(float)ScreenHeight, ZNearest, ZFarthest);
     XMStoreFloat4x4(&projectionMatrix, ProjectionMatrix);
     // Initialize projectionMatrixBuffer
     D3D11_BUFFER_DESC projectionMatrixBufferDesc = {};
