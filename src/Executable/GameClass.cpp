@@ -35,7 +35,7 @@ void GameClass::onFrame(double elapsed)
 void GameClass::onDraw()
 {
     // Clear the buffer to begin the scene
-    d3d->BeginScene(0.5f, 0.5f, 0.5f, 1.0f);
+    d3d->BeginScene();
 
     model->onRender(d3d->getDeviceContext());
 

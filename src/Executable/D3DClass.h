@@ -24,7 +24,7 @@ public:
         _In_ float YFovAngle, _In_ float ZNearest, _In_ float ZFarthest, _In_ bool VSync);
     ~D3DClass();
 
-    void BeginScene(_In_ float Red, _In_ float Green, _In_ float Blue, _In_ float Alpha);
+    void BeginScene();
     void EndScene();
 
     ID3D11DevicePtr getDevice();

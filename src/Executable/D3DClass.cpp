@@ -176,11 +176,8 @@ D3DClass::~D3DClass(void)
     }
 }
 
-void D3DClass::BeginScene(_In_ float Red, _In_ float Green, _In_ float Blue, _In_ float Alpha)
+void D3DClass::BeginScene()
 {
-    // TODO : 필요한 코드가 아님
-    FLOAT colorRGBA[] = { Red, Green, Blue, Alpha };
-    deviceContext->ClearRenderTargetView(renderTargetView, colorRGBA);
     deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
