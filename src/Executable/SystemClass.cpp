@@ -130,12 +130,11 @@ void SystemClass::Run(int ShowCommand)
 
     MSG message = {};
 
-    bool Done = false;
     while( true )
     {
         while ( PeekMessage(&message, nullptr, 0, 0, PM_REMOVE) )
         {
-            if ( message.message == WM_QUIT ) Done = true;
+            if ( message.message == WM_QUIT ) goto onQuit;
             DispatchMessage(&message);
         }
 
