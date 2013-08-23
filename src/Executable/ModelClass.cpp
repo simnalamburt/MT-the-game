@@ -8,18 +8,18 @@ using namespace DirectX;
 // Hard-coded data
 struct { XMVECTOR position; XMFLOAT2 tex; XMFLOAT3 normal; } vertices[] =
 {
-    { XMVectorSet(-0.8f, 0.6f, 0, 1), 	XMFLOAT2(0, 0), 	XMFLOAT3(0, 0, -1) },
-    { XMVectorSet(0.8f, 0.6f, 0, 1), 	XMFLOAT2(1, 0), 	XMFLOAT3(0, 0, -1) },
-    { XMVectorSet(0.8f, -0.6f, 0, 1), 	XMFLOAT2(1, 1), 	XMFLOAT3(0, 0, -1) },
-    { XMVectorSet(-0.8f, -0.6f, 0, 1), 	XMFLOAT2(0, 1), 	XMFLOAT3(0, 0, -1) },
+    { XMVectorSet(-0.8f, 0.6f, 0, 1),   XMFLOAT2(0, 0),     XMFLOAT3(0, 0, 1) },
+    { XMVectorSet(-0.8f, -0.6f, 0, 1),   XMFLOAT2(0, 1),     XMFLOAT3(0, 0, 1) },
+    { XMVectorSet(0.8f, -0.6f, 0, 1),   XMFLOAT2(1, 1),     XMFLOAT3(0, 0, 1) },
+    { XMVectorSet(0.8f, 0.6f, 0, 1),   XMFLOAT2(1, 0),     XMFLOAT3(0, 0, 1) },
 };
 UINT32 indices[] =
 {
-    0, 1, 3,
-    1, 2, 3
+    0, 1, 2,
+    0, 2, 3
 };
 
-const wchar_t* textureFileName = L"Assets/picture.dds";
+const wchar_t* textureFileName = L"Assets/texture.dds";
 
 
 

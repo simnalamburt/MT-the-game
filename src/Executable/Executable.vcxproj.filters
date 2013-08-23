@@ -123,7 +123,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Assets\picture.dds">
+    <Image Include="Assets\texture.dds">
       <Filter>[Assets]</Filter>
     </Image>
   </ItemGroup>
