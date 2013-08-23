@@ -23,7 +23,10 @@ public:
     static const bool VSync;
 
 public:
-    GameClass(_In_ HWND WindowHandle, _In_ size_t ScreenWidth, _In_ size_t ScreenHeight, _In_ bool FullScreen);
+    GameClass(HWND WindowHandle, size_t ScreenWidth, size_t ScreenHeight, bool FullScreen);
 
-    void onIdle();
+    void onFrame(double elapsed);
+    void onDraw();
+    void onKeyDown(char vkey);
+    void onKeyUp(char vkey);
 };

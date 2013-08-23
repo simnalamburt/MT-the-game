@@ -26,7 +26,13 @@ GameClass::GameClass(_In_ HWND WindowHandle, _In_ size_t ScreenWidth, _In_ size_
     light->onLoad(d3d->getDeviceContext());
 }
 
-void GameClass::onIdle()
+
+
+void GameClass::onFrame(double elapsed)
+{
+}
+
+void GameClass::onDraw()
 {
     // Clear the buffer to begin the scene
     d3d->BeginScene(0.5f, 0.5f, 0.5f, 1.0f);
@@ -35,4 +41,45 @@ void GameClass::onIdle()
 
     // Present the rendered scene to the screen
     d3d->EndScene();
+}
+
+
+
+void GameClass::onKeyDown(char vkey)
+{
+    switch (vkey)
+    {
+    case VK_LEFT:
+        return;
+    case VK_RIGHT:
+        return;
+    case VK_UP:
+        return;
+    case VK_DOWN:
+        return;
+
+    case VK_SPACE:
+        return;
+
+    default:
+        return;
+    }
+}
+
+void GameClass::onKeyUp(char vkey)
+{
+    switch (vkey)
+    {
+    case VK_LEFT:
+        return;
+    case VK_RIGHT:
+        return;
+    case VK_UP:
+        return;
+    case VK_DOWN:
+        return;
+
+    default:
+        return;
+    }
 }
