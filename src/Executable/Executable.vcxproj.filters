@@ -4,9 +4,6 @@
     <Filter Include="SystemClass">
       <UniqueIdentifier>{1ac3d79f-99bf-4522-9ec1-751c6824c4c7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="InputClass">
-      <UniqueIdentifier>{e2b5bf6f-449d-4c8f-a31f-fe78d99c7dee}</UniqueIdentifier>
-    </Filter>
     <Filter Include="D3DClass">
       <UniqueIdentifier>{77910288-1a96-4862-b45c-ff3caed8abcf}</UniqueIdentifier>
     </Filter>
@@ -50,9 +47,6 @@
     <ClCompile Include="SystemClass.cpp">
       <Filter>SystemClass</Filter>
     </ClCompile>
-    <ClCompile Include="InputClass.cpp">
-      <Filter>InputClass</Filter>
-    </ClCompile>
     <ClCompile Include="D3DClass.cpp">
       <Filter>D3DClass</Filter>
     </ClCompile>
@@ -81,9 +75,6 @@
     </ClInclude>
     <ClInclude Include="SystemClass.h">
       <Filter>SystemClass</Filter>
-    </ClInclude>
-    <ClInclude Include="InputClass.h">
-      <Filter>InputClass</Filter>
     </ClInclude>
     <ClInclude Include="D3DClass.h">
       <Filter>D3DClass</Filter>

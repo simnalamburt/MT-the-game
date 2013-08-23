@@ -3,15 +3,30 @@
 #include "resource.h"
 using std::wstring;
 
-static LRESULT CALLBACK WndProc_1(HWND, UINT, WPARAM, LPARAM);
-static LRESULT CALLBACK WndProc_2(HWND, UINT, WPARAM, LPARAM);
+static LRESULT CALLBACK WndProc_temp(HWND, UINT, WPARAM, LPARAM);
+static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 static wstring LoadString(_In_opt_ HINSTANCE InstanceHandle, _In_ UINT uID);
+
+static double getTimerFreq()
+{
+    LARGE_INTEGER freq;
+    FALSE_ERROR( QueryPerformanceFrequency(&freq) );
+    return static_cast<double>( freq.QuadPart );
+}
+
+static double getTimerCount()
+{
+    LARGE_INTEGER count;
+    FALSE_ERROR( QueryPerformanceCounter(&count) );
+    return static_cast<double>( count.QuadPart );
+}
 
 
 
 SystemClass::SystemClass(_In_ HINSTANCE InstanceHandle, _In_ size_t Width, _In_ size_t Height, _In_ bool FullScreen) :
-    instanceHandle ( InstanceHandle ), width ( Width ), height ( Height ), fullscreen ( FullScreen ),
-    input ( new InputClass )
+    instanceHandle ( InstanceHandle ),
+    displaySettingChanged ( FullScreen ),
+    freq( getTimerFreq() ), last( 0.0 )
 {
 #pragma region initialize windowHandle
     // get the application title and name of the class from the Executable.rc
@@ -22,8 +37,8 @@ SystemClass::SystemClass(_In_ HINSTANCE InstanceHandle, _In_ size_t Width, _In_ 
     int DisplayWidth, DisplayHeight;
     FALSE_WARNING( DisplayWidth = GetSystemMetrics(SM_CXSCREEN) );
     FALSE_WARNING( DisplayHeight = GetSystemMetrics(SM_CYSCREEN) );
-    if ( !DisplayWidth ) DisplayWidth = width;
-    if ( !DisplayHeight ) DisplayHeight = height;
+    if ( !DisplayWidth ) DisplayWidth = Width;
+    if ( !DisplayHeight ) DisplayHeight = Height;
 
     int screenWidth, screenHeight, posX, posY;
     DWORD windowStyle, windowExStyle;
@@ -31,7 +46,7 @@ SystemClass::SystemClass(_In_ HINSTANCE InstanceHandle, _In_ size_t Width, _In_ 
     // set the basic window information
     WNDCLASSEX wcex = {};
     wcex.style 				= CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc		= WndProc_1;
+    wcex.lpfnWndProc		= WndProc_temp;
     wcex.lpszClassName	= ClassName.c_str();
     wcex.hInstance			= instanceHandle;
     wcex.hIcon = wcex.hIconSm = LoadIcon(NULL, IDI_WINLOGO);
@@ -42,7 +57,7 @@ SystemClass::SystemClass(_In_ HINSTANCE InstanceHandle, _In_ size_t Width, _In_ 
     FALSE_ERROR( RegisterClassEx(&wcex) );
 
     // set the screen settings depending on whether it is running in full screen or not
-    if ( fullscreen )
+    if ( FullScreen )
     {
         // set the size of the screen to size of display
         screenWidth = DisplayWidth;
@@ -67,8 +82,8 @@ SystemClass::SystemClass(_In_ HINSTANCE InstanceHandle, _In_ size_t Width, _In_ 
     else
     {
         // set the size of the screen to default size
-        screenWidth = width;
-        screenHeight = height;
+        screenWidth = Width;
+        screenHeight = Height;
         // set the position of the window to the center of the display
         posX = ( DisplayWidth - screenWidth ) / 2;
         posY = ( DisplayHeight - screenHeight ) / 2;
@@ -81,12 +96,15 @@ SystemClass::SystemClass(_In_ HINSTANCE InstanceHandle, _In_ size_t Width, _In_ 
 #pragma endregion
 
     // initialize game object
-    game.reset(new GameClass(windowHandle, screenWidth, screenHeight, fullscreen));
+    game.reset(new GameClass(windowHandle, screenWidth, screenHeight, FullScreen));
 }
 
 SystemClass::~SystemClass()
 {
-    if ( fullscreen )
+    // discard game object
+    game.reset();
+
+    if ( displaySettingChanged )
     {
         NONZERO_WARNING( ChangeDisplaySettings(nullptr, 0) );
     }
@@ -104,7 +122,7 @@ SystemClass::~SystemClass()
     }
 }
 
-void SystemClass::Run(_In_ int ShowCommand)
+void SystemClass::Run(int ShowCommand)
 {
     ShowWindow(windowHandle, ShowCommand);
     FALSE_WARNING( SetForegroundWindow(windowHandle) );
@@ -117,19 +135,17 @@ void SystemClass::Run(_In_ int ShowCommand)
     {
         while ( PeekMessage(&message, nullptr, 0, 0, PM_REMOVE) )
         {
-            DispatchMessage(&message);
             if ( message.message == WM_QUIT ) Done = true;
+            DispatchMessage(&message);
         }
 
-        if ( Done ) break;
+        onIdle();
 
-        this->onIdle();
+        // TODO : 윈도우가 비활성화되었을때의 처리가 여기에 들어가야한다
+        // WaitMessage();
     }
-}
-
-void SystemClass::onIdle()
-{
-    game->onIdle();
+onQuit:
+    return;
 }
 
 LRESULT CALLBACK SystemClass::MessageHandler(HWND WindowHandle, UINT Message, WPARAM wParam, LPARAM lParam)
@@ -137,14 +153,14 @@ LRESULT CALLBACK SystemClass::MessageHandler(HWND WindowHandle, UINT Message, WP
     switch ( Message )
     {
     case WM_PAINT:
-        game->onIdle();
+        onIdle();
         ValidateRect(WindowHandle, nullptr);
         return 0;
     case WM_KEYDOWN:
-        input->KeyDown(static_cast<unsigned int>(wParam));
+        game->onKeyDown(wParam);
         return 0;
     case WM_KEYUP:
-        input->KeyUp(static_cast<unsigned int>(wParam));
+        game->onKeyUp(wParam);
         return 0;
     case WM_DESTROY:
         PostQuitMessage(0);
@@ -154,23 +170,35 @@ LRESULT CALLBACK SystemClass::MessageHandler(HWND WindowHandle, UINT Message, WP
     }
 }
 
+void SystemClass::onIdle()
+{
+    double now = getTimerCount();
+    if ( last == 0.0 ) last = now;
+    game->onFrame( (now-last)/freq );
+    last = now;
+
+    game->onDraw();
+}
+
+
+
 // temporary window procedure of new window
-static LRESULT CALLBACK WndProc_1(HWND WindowHandle, UINT Message, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK WndProc_temp(HWND WindowHandle, UINT Message, WPARAM wParam, LPARAM lParam)
 {
     // it change the window's WndProc when it set GWL_USERDATA to address of a SystemClass object
     if ( Message == WM_NCCREATE )
     {
         LPCREATESTRUCT CreateStruct = reinterpret_cast<LPCREATESTRUCT>( lParam );
         SetWindowLongPtr(WindowHandle, GWL_USERDATA, reinterpret_cast<LONG_PTR>( CreateStruct->lpCreateParams ));
-        SetWindowLongPtr(WindowHandle, GWL_WNDPROC, reinterpret_cast<LONG_PTR>( WndProc_2 ));
-        return WndProc_2(WindowHandle, Message, wParam, lParam);
+        SetWindowLongPtr(WindowHandle, GWL_WNDPROC, reinterpret_cast<LONG_PTR>( WndProc ));
+        return WndProc(WindowHandle, Message, wParam, lParam);
     }
 
     return DefWindowProc(WindowHandle, Message, wParam, lParam);
 }
 
 // main window procedure
-static LRESULT CALLBACK WndProc_2(HWND WindowHandle, UINT Message, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK WndProc(HWND WindowHandle, UINT Message, WPARAM wParam, LPARAM lParam)
 {
     SystemClass* system = reinterpret_cast<SystemClass*>( GetWindowLongPtr(WindowHandle, GWL_USERDATA) );
     return system->MessageHandler(WindowHandle, Message, wParam, lParam);

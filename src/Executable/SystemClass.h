@@ -1,24 +1,23 @@
 #pragma once
-#include "InputClass.h"
 #include "GameClass.h"
 
 class SystemClass : Uncopyable
 {
 private:
     HINSTANCE instanceHandle;
-    size_t width;
-    size_t height;
-    bool fullscreen;
+    bool displaySettingChanged;
 
     HWND windowHandle;
-    unique_ptr<InputClass> input;
     unique_ptr<GameClass> game;
 
+    const double freq;
+    double last;
+
 public:
-    SystemClass(_In_ HINSTANCE InstanceHandle, _In_ size_t Width, _In_ size_t Height, _In_ bool FullScreen);
+    SystemClass(HINSTANCE InstanceHandle, size_t Width, size_t Height, bool FullScreen);
     ~SystemClass();
 
-    void Run(_In_ int ShowCommand);
+    void Run(int ShowCommand);
     LRESULT CALLBACK MessageHandler(HWND, UINT, WPARAM, LPARAM);
 private:
     void onIdle();
