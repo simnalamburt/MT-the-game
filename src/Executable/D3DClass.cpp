@@ -195,3 +195,8 @@ ID3D11DeviceContextPtr D3DClass::getDeviceContext()
 {
     return deviceContext;
 }
+
+XMMATRIX D3DClass::getProjectionMatrix()
+{
+    return XMLoadFloat4x4(&projectionMatrix);
+}

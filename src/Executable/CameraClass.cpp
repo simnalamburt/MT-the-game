@@ -25,3 +25,8 @@ void CameraClass::onLoad(ID3D11DeviceContextPtr DeviceContext)
     ID3D11Buffer* cbufferList[] = { viewMatrixBuffer };
     DeviceContext->VSSetConstantBuffers(1, ARRAYSIZE(cbufferList), cbufferList);
 }
+
+XMMATRIX CameraClass::getViewMatrix()
+{
+    return XMLoadFloat4x4(&viewMatrix);
+}

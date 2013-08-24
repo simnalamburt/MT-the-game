@@ -18,7 +18,7 @@ GameClass::GameClass(_In_ HWND WindowHandle, _In_ size_t ScreenWidth, _In_ size_
 
     shader ( new ShaderClass(d3d->getDevice()) ),
     model ( new ModelClass(d3d->getDevice()) ), 
-    camera ( new CameraClass(d3d->getDevice(), XMFLOAT3(0.0f, 2.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 0.0f)) ),
+    camera ( new CameraClass(d3d->getDevice(), XMFLOAT3(2.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 0.0f)) ),
     light ( new LightClass(d3d->getDevice(), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f/3.0f, -2.0f/3.0f, -2.0f/3.0f)) ),
 
     gun ( Model::CreateFromCMO(d3d->getDevice(), L"Assets/Mk 12 SPR.cmo", EffectFactory(d3d->getDevice())) )
@@ -39,7 +39,11 @@ void GameClass::onDraw()
     // Clear the buffer to begin the scene
     d3d->BeginScene();
 
-    model->onRender(d3d->getDeviceContext());
+    CommonStates states(d3d->getDevice());
+    XMMATRIX world = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+    world *= XMMatrixRotationX(XM_PIDIV2);
+    gun->Draw(d3d->getDeviceContext(), states, world, camera->getViewMatrix(), d3d->getProjectionMatrix());
+    // model->onRender(d3d->getDeviceContext());
 
     // Present the rendered scene to the screen
     d3d->EndScene();

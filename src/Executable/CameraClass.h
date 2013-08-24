@@ -10,5 +10,7 @@ public:
     CameraClass(_In_ ID3D11DevicePtr Device, _In_ const XMFLOAT3& EyePosition, _In_ const XMFLOAT3& FocusPosition);
 
     void onLoad(_In_ ID3D11DeviceContextPtr DeviceContext);
+
+    XMMATRIX getViewMatrix();
 };
 

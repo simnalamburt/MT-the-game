@@ -29,5 +29,7 @@ public:
 
     ID3D11DevicePtr getDevice();
     ID3D11DeviceContextPtr getDeviceContext();
+
+    XMMATRIX getProjectionMatrix();
 };
 

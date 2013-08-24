@@ -18,6 +18,7 @@
 using DirectX::XMFLOAT3;
 using DirectX::XMFLOAT4;
 using DirectX::XMFLOAT4X4;
+using DirectX::XMMATRIX;
 
 // _com_ptr_t
 #include <comdef.h>
@@ -64,5 +65,6 @@ using std::weak_ptr;
 #include "DDSTextureLoader.h"
 #include "Effects.h"
 #include "Model.h"
+#include "CommonStates.h"
 using DirectX::Model;
 #pragma endregion
