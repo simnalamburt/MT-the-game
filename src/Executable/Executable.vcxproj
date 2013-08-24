@@ -64,6 +64,10 @@
     </Bscmake>
     <PreBuildEvent />
     <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+    <PostBuildEvent>
       <Command>set Name=Assets
 set From=$(ProjectDir)%Name%
 set To=$(TargetDir)%Name%
@@ -81,7 +85,7 @@ if %errorlevel% gtr 1 exit %errorlevel%
 echo|set /p=프로젝트 빌드 결과물이 %ResultPath%로 복사되었습니다.
 
 exit 0</Command>
-    </PreBuildEvent>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -100,24 +104,28 @@ exit 0</Command>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+    <PostBuildEvent>
       <Command>set Name=Assets
 set From=$(ProjectDir)%Name%
 set To=$(TargetDir)%Name%
 rmdir		"%To%" /s /q
 mkdir		"%To%"
-robocopy		"%From%" "%To%" /mir /njh /njs /ndl /nc /ns /np /nfl
-if %errorlevel% gt 1 exit %errorlevel%
-echo %From% 폴더의 내용물이 %To%로 복사되었습니다.
+robocopy		"%From% " "%To% " /mir /njh /njs /ndl /nc /ns /np /nfl
+if %errorlevel% gtr 1 exit %errorlevel%
+echo|set /p=%Name% 폴더의 내용물이 %To%로 복사되었습니다.
 
 set ResultPath=$(SolutionDir)..\bin
 rmdir		"%ResultPath%" /s /q
 mkdir		"%ResultPath%"
-robocopy		"$(TargetDir)" "%ResultPath%" /mir /njh /njs /ndl /nc /ns /np /nfl
-if %errorlevel% gt 1 exit %errorlevel%
-echo 프로젝트 빌드 결과물이 %ResultPath%로 복사되었습니다.
+robocopy		"$(TargetDir) " "%ResultPath% " /mir /njh /njs /ndl /nc /ns /np /nfl
+if %errorlevel% gtr 1 exit %errorlevel%
+echo|set /p=프로젝트 빌드 결과물이 %ResultPath%로 복사되었습니다.
 
 exit 0</Command>
-    </PreBuildEvent>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CameraClass.cpp" />
