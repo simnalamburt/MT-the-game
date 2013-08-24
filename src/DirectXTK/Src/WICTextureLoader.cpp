@@ -30,6 +30,10 @@
 
 #include "pch.h"
 
+#if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/) || defined(_WIN7_PLATFORM_UPDATE)
+#include <d2d1.h>
+#endif
+
 #pragma warning(push)
 #pragma warning(disable : 4005)
 #include <wincodec.h>
@@ -63,7 +67,6 @@ static WICTranslate g_WICFormats[] =
 
     { GUID_WICPixelFormat32bppRGBA1010102XR,    DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM }, // DXGI 1.1
     { GUID_WICPixelFormat32bppRGBA1010102,      DXGI_FORMAT_R10G10B10A2_UNORM },
-    { GUID_WICPixelFormat32bppRGBE,             DXGI_FORMAT_R9G9B9E5_SHAREDEXP },
 
 #ifdef DXGI_1_2_FORMATS
 
@@ -144,6 +147,7 @@ static WICConvert g_WICConvert[] =
     { GUID_WICPixelFormat128bppRGBFloat,        GUID_WICPixelFormat128bppRGBAFloat }, // DXGI_FORMAT_R32G32B32A32_FLOAT 
     { GUID_WICPixelFormat128bppRGBAFixedPoint,  GUID_WICPixelFormat128bppRGBAFloat }, // DXGI_FORMAT_R32G32B32A32_FLOAT 
     { GUID_WICPixelFormat128bppRGBFixedPoint,   GUID_WICPixelFormat128bppRGBAFloat }, // DXGI_FORMAT_R32G32B32A32_FLOAT 
+    { GUID_WICPixelFormat32bppRGBE,             GUID_WICPixelFormat128bppRGBAFloat }, // DXGI_FORMAT_R32G32B32A32_FLOAT 
 
     { GUID_WICPixelFormat32bppCMYK,             GUID_WICPixelFormat32bppRGBA }, // DXGI_FORMAT_R8G8B8A8_UNORM 
     { GUID_WICPixelFormat64bppCMYK,             GUID_WICPixelFormat64bppRGBA }, // DXGI_FORMAT_R16G16B16A16_UNORM
@@ -455,6 +459,46 @@ static HRESULT CreateTextureFromWIC( _In_ ID3D11Device* d3dDevice,
     if ( !bpp )
         return E_FAIL;
 
+    // Handle sRGB formats
+    if ( forceSRGB )
+    {
+        format = MakeSRGB( format );
+    }
+    else
+    {
+        ScopedObject<IWICMetadataQueryReader> metareader;
+        if ( SUCCEEDED( frame->GetMetadataQueryReader( &metareader ) ) )
+        {
+            GUID containerFormat;
+            if ( SUCCEEDED( metareader->GetContainerFormat( &containerFormat ) ) )
+            {
+                // Check for sRGB colorspace metadata
+                bool sRGB = false;
+
+                PROPVARIANT value;
+                PropVariantInit( &value );
+
+                if ( memcmp( &containerFormat, &GUID_ContainerFormatPng, sizeof(GUID) ) == 0 )
+                {
+                    // Check for sRGB chunk
+                    if ( SUCCEEDED( metareader->GetMetadataByName( L"/sRGB/RenderingIntent", &value ) ) && value.vt == VT_UI1 )
+                    {
+                        sRGB = true;
+                    }
+                }
+                else if ( SUCCEEDED( metareader->GetMetadataByName( L"System.Image.ColorSpace", &value ) ) && value.vt == VT_UI2 && value.uiVal == 1 )
+                {
+                    sRGB = true;
+                }
+
+                PropVariantClear( &value );
+
+                if ( sRGB )
+                    format = MakeSRGB( format );
+            }
+        }
+    }
+
     // Verify our target format is supported by the current device
     // (handles WDDM 1.0 or WDDM 1.1 device driver cases as well as DirectX 11.0 Runtime without 16bpp format support)
     UINT support = 0;
@@ -471,7 +515,9 @@ static HRESULT CreateTextureFromWIC( _In_ ID3D11Device* d3dDevice,
     size_t rowPitch = ( twidth * bpp + 7 ) / 8;
     size_t imageSize = rowPitch * theight;
 
-    std::unique_ptr<uint8_t[]> temp( new uint8_t[ imageSize ] );
+    std::unique_ptr<uint8_t[]> temp( new (std::nothrow) uint8_t[ imageSize ] );
+    if (!temp)
+        return E_OUTOFMEMORY;
 
     // Load image data
     if ( memcmp( &convertGUID, &pixelFormat, sizeof(GUID) ) == 0
@@ -596,12 +642,7 @@ static HRESULT CreateTextureFromWIC( _In_ ID3D11Device* d3dDevice,
         {
             D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
             memset( &SRVDesc, 0, sizeof( SRVDesc ) );
-            if ( forceSRGB )
-            {
-                SRVDesc.Format = MakeSRGB( format );
-            }
-            else
-                SRVDesc.Format = format;
+            SRVDesc.Format = desc.Format;
 
             SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
             SRVDesc.Texture2D.MipLevels = (autogen) ? -1 : 1;
@@ -664,15 +705,20 @@ HRESULT DirectX::CreateWICTextureFromMemoryEx( ID3D11Device* d3dDevice,
                                                ID3D11Resource** texture,
                                                ID3D11ShaderResourceView** textureView )
 {
-    if (!d3dDevice || !wicData || (!texture && !textureView))
+    if ( texture )
     {
-        return E_INVALIDARG;
+        *texture = nullptr;
+    }
+    if ( textureView )
+    {
+        *textureView = nullptr;
     }
 
+    if (!d3dDevice || !wicData || (!texture && !textureView))
+        return E_INVALIDARG;
+
     if ( !wicDataSize )
-    {
         return E_FAIL;
-    }
 
 #ifdef _M_AMD64
     if ( wicDataSize > 0xFFFFFFFF )
@@ -750,10 +796,17 @@ HRESULT DirectX::CreateWICTextureFromFileEx( ID3D11Device* d3dDevice,
                                              ID3D11Resource** texture,
                                              ID3D11ShaderResourceView** textureView )
 {
-    if (!d3dDevice || !fileName || (!texture && !textureView))
+    if ( texture )
     {
-        return E_INVALIDARG;
+        *texture = nullptr;
     }
+    if ( textureView )
+    {
+        *textureView = nullptr;
+    }
+
+    if (!d3dDevice || !fileName || (!texture && !textureView))
+        return E_INVALIDARG;
 
     IWICImagingFactory* pWIC = _GetWIC();
     if ( !pWIC )
@@ -773,46 +826,50 @@ HRESULT DirectX::CreateWICTextureFromFileEx( ID3D11Device* d3dDevice,
     hr = CreateTextureFromWIC( d3dDevice, d3dContext, frame.Get(), maxsize, 
                                usage, bindFlags, cpuAccessFlags, miscFlags, forceSRGB,
                                texture, textureView );
-    if ( FAILED(hr)) 
-        return hr;
 
 #if defined(_DEBUG) || defined(PROFILE)
-    if (texture != 0 || textureView != 0)
+    if ( SUCCEEDED(hr) )
     {
-        CHAR strFileA[MAX_PATH];
-        WideCharToMultiByte( CP_ACP,
-                             WC_NO_BEST_FIT_CHARS,
-                             fileName,
-                             -1,
-                             strFileA,
-                             MAX_PATH,
-                             nullptr,
-                             FALSE
-                           );
-        const CHAR* pstrName = strrchr( strFileA, '\\' );
-        if (!pstrName)
+        if (texture != 0 || textureView != 0)
         {
-            pstrName = strFileA;
-        }
-        else
-        {
-            pstrName++;
-        }
+            CHAR strFileA[MAX_PATH];
+            int result = WideCharToMultiByte( CP_ACP,
+                                 WC_NO_BEST_FIT_CHARS,
+                                 fileName,
+                                 -1,
+                                 strFileA,
+                                 MAX_PATH,
+                                 nullptr,
+                                 FALSE
+                               );
+            if ( result > 0 )
+            {
+                const CHAR* pstrName = strrchr( strFileA, '\\' );
+                if (!pstrName)
+                {
+                    pstrName = strFileA;
+                }
+                else
+                {
+                    pstrName++;
+                }
 
-        if (texture != 0 && *texture != 0)
-        {
-            (*texture)->SetPrivateData( WKPDID_D3DDebugObjectName,
-                                        static_cast<UINT>( strnlen_s(pstrName, MAX_PATH) ),
-                                        pstrName
-                                      );
-        }
+                if (texture != 0 && *texture != 0)
+                {
+                    (*texture)->SetPrivateData( WKPDID_D3DDebugObjectName,
+                                                static_cast<UINT>( strnlen_s(pstrName, MAX_PATH) ),
+                                                pstrName
+                                              );
+                }
 
-        if (textureView != 0 && *textureView != 0 )
-        {
-            (*textureView)->SetPrivateData( WKPDID_D3DDebugObjectName,
-                                            static_cast<UINT>( strnlen_s(pstrName, MAX_PATH) ),
-                                            pstrName
-                                          );
+                if (textureView != 0 && *textureView != 0 )
+                {
+                    (*textureView)->SetPrivateData( WKPDID_D3DDebugObjectName,
+                                                    static_cast<UINT>( strnlen_s(pstrName, MAX_PATH) ),
+                                                    pstrName
+                                                  );
+                }
+            }
         }
     }
 #endif

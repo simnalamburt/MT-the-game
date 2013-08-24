@@ -37,10 +37,20 @@
 #pragma warning(push)
 #pragma warning(disable : 4005)
 #include <stdint.h>
-#include <wrl.h>
+#include <intsafe.h>
 #pragma warning(pop)
+
+#include <wrl.h>
 
 #if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/) && !defined(DXGI_1_2_FORMATS)
 #define DXGI_1_2_FORMATS
 #endif
 
+namespace DirectX
+{
+    #if (DIRECTXMATH_VERSION < 305) && !defined(XM_CALLCONV)
+    #define XM_CALLCONV __fastcall
+    typedef const XMVECTOR& HXMVECTOR;
+    typedef const XMMATRIX& FXMMATRIX;
+    #endif
+}

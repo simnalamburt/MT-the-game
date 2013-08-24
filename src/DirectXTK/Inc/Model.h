@@ -27,12 +27,19 @@
 #pragma warning(push)
 #pragma warning(disable : 4005)
 #include <stdint.h>
-#include <wrl.h>
+#include <intsafe.h>
 #pragma warning(pop)
 
+#include <wrl.h>
 
 namespace DirectX
 {
+    #if (DIRECTXMATH_VERSION < 305) && !defined(XM_CALLCONV)
+    #define XM_CALLCONV __fastcall
+    typedef const XMVECTOR& HXMVECTOR;
+    typedef const XMMATRIX& FXMMATRIX;
+    #endif
+
     class IEffect;
     class IEffectFactory;
     class CommonStates;
@@ -90,7 +97,7 @@ namespace DirectX
         void PrepareForRendering( _In_ ID3D11DeviceContext* deviceContext, CommonStates& states, bool alpha = false, bool wireframe = false ) const;
 
         // Draw the mesh
-        void Draw( _In_ ID3D11DeviceContext* deviceContext, CXMMATRIX world, CXMMATRIX view, CXMMATRIX projection,
+        void XM_CALLCONV Draw(_In_ ID3D11DeviceContext* deviceContext, FXMMATRIX world, CXMMATRIX view, CXMMATRIX projection,
                    bool alpha = false, _In_opt_ std::function<void()> setCustomState = nullptr ) const;
     };
 
@@ -103,8 +110,8 @@ namespace DirectX
         std::wstring            name;
 
         // Draw all the meshes in the model
-        void Draw( _In_ ID3D11DeviceContext* deviceContext, CommonStates& states, CXMMATRIX world, CXMMATRIX view, CXMMATRIX projection,
-                   bool wireframe = false, _In_opt_ std::function<void()> setCustomState = nullptr ) const;
+        void XM_CALLCONV Draw(_In_ ID3D11DeviceContext* deviceContext, CommonStates& states, FXMMATRIX world, CXMMATRIX view, CXMMATRIX projection,
+                              bool wireframe = false, _In_opt_ std::function<void()> setCustomState = nullptr ) const;
 
         // Notify model that effects, parts list, or mesh list has changed
         void Modified() { mEffectCache.clear(); }

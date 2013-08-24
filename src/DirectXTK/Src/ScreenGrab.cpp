@@ -28,6 +28,10 @@
 #include "pch.h"
 
 #if !defined(WINAPI_FAMILY) || (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP)
+#if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/) || defined(_WIN7_PLATFORM_UPDATE)
+#include <d2d1.h>
+#endif
+
 #pragma warning(push)
 #pragma warning(disable : 4005)
 #include <wincodec.h>
@@ -466,7 +470,7 @@ HRESULT DirectX::SaveDDSTextureToFile( _In_ ID3D11DeviceContext* pContext,
 
     *reinterpret_cast<uint32_t*>(&fileHeader[0]) = DDS_MAGIC;
 
-    DDS_HEADER* header = reinterpret_cast<DDS_HEADER*>( reinterpret_cast<uint8_t*>(&fileHeader[0]) + sizeof(uint32_t) );
+    auto header = reinterpret_cast<DDS_HEADER*>( reinterpret_cast<uint8_t*>(&fileHeader[0]) + sizeof(uint32_t) );
     size_t headerSize = sizeof(uint32_t) + sizeof(DDS_HEADER);
     memset( header, 0, sizeof(DDS_HEADER) );
     header->size = sizeof( DDS_HEADER );
@@ -541,14 +545,16 @@ HRESULT DirectX::SaveDDSTextureToFile( _In_ ID3D11DeviceContext* pContext,
     }
 
     // Setup pixels
-    std::unique_ptr<uint8_t> pixels( new uint8_t[ slicePitch ] );
+    std::unique_ptr<uint8_t> pixels( new (std::nothrow) uint8_t[ slicePitch ] );
+    if (!pixels)
+        return E_OUTOFMEMORY;
 
     D3D11_MAPPED_SUBRESOURCE mapped;
     hr = pContext->Map( pStaging.Get(), 0, D3D11_MAP_READ, 0, &mapped );
     if ( FAILED(hr) )
         return hr;
 
-    const uint8_t* sptr = reinterpret_cast<const uint8_t*>( mapped.pData );
+    auto sptr = reinterpret_cast<const uint8_t*>( mapped.pData );
     if ( !sptr )
     {
         pContext->Unmap( pStaging.Get(), 0 );
@@ -597,12 +603,11 @@ HRESULT DirectX::SaveWICTextureToFile( _In_ ID3D11DeviceContext* pContext,
                                        _In_ ID3D11Resource* pSource,
                                        _In_ REFGUID guidContainerFormat, 
                                        _In_z_ LPCWSTR fileName,
-                                       _In_opt_ const GUID* targetFormat )
+                                       _In_opt_ const GUID* targetFormat,
+                                       _In_opt_ std::function<void(IPropertyBag2*)> setCustomProps )
 {
     if ( !fileName )
-    {
         return E_INVALIDARG;
-    }
 
     D3D11_TEXTURE2D_DESC desc = { 0 };
     ScopedObject<ID3D11Texture2D> pStaging;
@@ -612,6 +617,7 @@ HRESULT DirectX::SaveWICTextureToFile( _In_ ID3D11DeviceContext* pContext,
 
     // Determine source format's WIC equivalent
     WICPixelFormatGUID pfGuid;
+    bool sRGB = false;
     switch ( desc.Format )
     {
     case DXGI_FORMAT_R32G32B32A32_FLOAT:            pfGuid = GUID_WICPixelFormat128bppRGBAFloat; break;
@@ -619,7 +625,6 @@ HRESULT DirectX::SaveWICTextureToFile( _In_ ID3D11DeviceContext* pContext,
     case DXGI_FORMAT_R16G16B16A16_UNORM:            pfGuid = GUID_WICPixelFormat64bppRGBA; break;
     case DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM:    pfGuid = GUID_WICPixelFormat32bppRGBA1010102XR; break; // DXGI 1.1
     case DXGI_FORMAT_R10G10B10A2_UNORM:             pfGuid = GUID_WICPixelFormat32bppRGBA1010102; break;
-    case DXGI_FORMAT_R9G9B9E5_SHAREDEXP:            pfGuid = GUID_WICPixelFormat32bppRGBE; break;
     case DXGI_FORMAT_B5G5R5A1_UNORM:                pfGuid = GUID_WICPixelFormat16bppBGRA5551; break;
     case DXGI_FORMAT_B5G6R5_UNORM:                  pfGuid = GUID_WICPixelFormat16bppBGR565; break;
     case DXGI_FORMAT_R32_FLOAT:                     pfGuid = GUID_WICPixelFormat32bppGrayFloat; break;
@@ -629,18 +634,30 @@ HRESULT DirectX::SaveWICTextureToFile( _In_ ID3D11DeviceContext* pContext,
     case DXGI_FORMAT_A8_UNORM:                      pfGuid = GUID_WICPixelFormat8bppAlpha; break;
 
     case DXGI_FORMAT_R8G8B8A8_UNORM:
-    case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
         pfGuid = GUID_WICPixelFormat32bppRGBA;
         break;
 
+    case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+        pfGuid = GUID_WICPixelFormat32bppRGBA;
+        sRGB = true;
+        break;
+
     case DXGI_FORMAT_B8G8R8A8_UNORM: // DXGI 1.1
-    case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
         pfGuid = GUID_WICPixelFormat32bppBGRA;
         break;
 
+    case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB: // DXGI 1.1
+        pfGuid = GUID_WICPixelFormat32bppBGRA;
+        sRGB = true;
+        break;
+
     case DXGI_FORMAT_B8G8R8X8_UNORM: // DXGI 1.1
-    case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
         pfGuid = GUID_WICPixelFormat32bppBGR;
+        break; 
+
+    case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB: // DXGI 1.1
+        pfGuid = GUID_WICPixelFormat32bppBGR;
+        sRGB = true;
         break; 
 
     default:
@@ -675,21 +692,21 @@ HRESULT DirectX::SaveWICTextureToFile( _In_ ID3D11DeviceContext* pContext,
     if ( FAILED(hr) )
         return hr;
 
-    if ( targetFormat && memcmp( &guidContainerFormat, &GUID_ContainerFormatBmp, sizeof(WICPixelFormatGUID) ) == 0  )
+    if ( targetFormat && memcmp( &guidContainerFormat, &GUID_ContainerFormatBmp, sizeof(WICPixelFormatGUID) ) == 0 && _IsWIC2() )
     {
-        // Opt-in to the Windows 8 support for writing 32-bit Windows BMP files with an alpha channel if supported
+        // Opt-in to the WIC2 support for writing 32-bit Windows BMP files with an alpha channel
         PROPBAG2 option = { 0 };
         option.pstrName = L"EnableV5Header32bppBGRA";
 
         VARIANT varValue;    
         varValue.vt = VT_BOOL;
         varValue.boolVal = VARIANT_TRUE;      
-        hr = props->Write( 1, &option, &varValue ); 
-        if ( FAILED(hr) )
-        {
-            // Fails on older versions of WIC, so we default to the null property bag
-            props.Reset();
-        }
+        (void)props->Write( 1, &option, &varValue ); 
+    }
+
+    if ( setCustomProps )
+    {
+        setCustomProps( props.Get() );
     }
 
     hr = frame->Initialize( props.Get() );
@@ -718,7 +735,6 @@ HRESULT DirectX::SaveWICTextureToFile( _In_ ID3D11DeviceContext* pContext,
 #if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/) || defined(_WIN7_PLATFORM_UPDATE)
         case DXGI_FORMAT_R32G32B32A32_FLOAT:            
         case DXGI_FORMAT_R16G16B16A16_FLOAT:
-        case DXGI_FORMAT_R9G9B9E5_SHAREDEXP:
             if ( _IsWIC2() )
             {
                 targetGuid = GUID_WICPixelFormat96bppRGBFloat;
@@ -751,6 +767,50 @@ HRESULT DirectX::SaveWICTextureToFile( _In_ ID3D11DeviceContext* pContext,
     hr = frame->SetPixelFormat( &targetGuid );
     if ( FAILED(hr) )
         return hr;
+
+    if ( targetFormat && memcmp( targetFormat, &targetGuid, sizeof(WICPixelFormatGUID) ) != 0 )
+    {
+        // Requested output pixel format is not supported by the WIC codec
+        return E_FAIL;
+    }
+
+    // Encode WIC metadata
+    ScopedObject<IWICMetadataQueryWriter> metawriter;
+    if ( SUCCEEDED( frame->GetMetadataQueryWriter( &metawriter ) ) )
+    {
+        PROPVARIANT value;
+        PropVariantInit( &value );
+
+        value.vt = VT_LPSTR;
+        value.pszVal = "DirectXTK";
+
+        if ( memcmp( &guidContainerFormat, &GUID_ContainerFormatPng, sizeof(GUID) ) == 0 )
+        {
+            // Set Software name
+            (void)metawriter->SetMetadataByName( L"/tEXt/{str=Software}", &value );
+
+            // Set sRGB chunk
+            if ( sRGB )
+            {
+                value.vt = VT_UI1;
+                value.bVal = 0;
+                (void)metawriter->SetMetadataByName( L"/sRGB/RenderingIntent", &value );
+            }
+        }
+        else
+        {
+            // Set Software name
+            (void)metawriter->SetMetadataByName( L"System.ApplicationName", &value );
+
+            if ( sRGB )
+            {
+                // Set JPEG EXIF Colorspace of sRGB
+                value.vt = VT_UI2;
+                value.uiVal = 1;
+                (void)metawriter->SetMetadataByName( L"System.Image.ColorSpace", &value );
+            }
+        }
+    }
 
     D3D11_MAPPED_SUBRESOURCE mapped;
     hr = pContext->Map( pStaging.Get(), 0, D3D11_MAP_READ, 0, &mapped );

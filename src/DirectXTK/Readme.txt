@@ -4,19 +4,18 @@ DirectXTK - the DirectX Tool Kit
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-January 25, 2013
+July 1, 2013
 
 This package contains the "DirectX Tool Kit", a collection of helper classes for 
-writing Direct3D 11 C++ code for Windows Store apps, Windows 8 Win32 desktop
+writing Direct3D 11 C++ code for Windows Store apps, Windows 8.x Win32 desktop
 applications, Windows Phone 8 applications, Windows 7 applications, and
 Windows Vista Direct3D 11.0 applications.
 
-This code is designed to build with either Visual Studio 2012 or Visual Studio 
-2010. It requires the Windows 8.0 SDK for functionality such as the DirectXMath
-library and optionally the DXGI 1.2 headers. Visual Studio 2012 already includes
-this Windows SDK, but Visual Studio 2010 users must install the standalone Windows
-8.0 SDK. Details on using the Windows 8.0 SDK with VS 2010 are described on the
-Visual C++ Team Blog:
+This code is designed to build with Visual Studio 2010, 2012, or 2013. It requires
+the Windows 8.x SDK for functionality such as the DirectXMath library and optionally
+the DXGI 1.2 headers. Visual Studio 2012 and 2013 already include the appropriate 
+Windows SDK, but Visual Studio 2010 users must install the standalone Windows 8.x SDK.
+Details on using the Windows 8.x SDK with VS 2010 are described on the Visual C++ Team Blog:
 
 <http://blogs.msdn.com/b/vcblog/archive/2012/11/23/using-the-windows-8-sdk-with-visual-studio-2010-configuring-multiple-projects.aspx>
 
@@ -37,6 +36,7 @@ Inc\
     DDSTextureLoader.h - light-weight DDS file texture loader
     WICTextureLoader.h - WIC-based image file texture loader
     ScreenGrab.h - light-weight screen shot saver
+    SimpleMath.h - simplified C++ wrapper for DirectXMath
 
 Src\
     DirectXTK source files and internal implementation headers
@@ -449,11 +449,16 @@ GeometricPrimitive
 
 This is a helper for drawing simple geometric shapes:
 
-    - Cube
+    - Cube (aka hexahedron)
     - Sphere
     - Geodesic Sphere
     - Cylinder
+    - Cone
     - Torus
+    - Tetrahedron
+    - Octahedron
+    - Dodecahedron
+    - Icosahedron
     - Teapot
 
 Initialization:
@@ -531,7 +536,7 @@ Initialization:
 
     NOTE: The EffectFactory is declared in the Effects.h header.
 
-    Visual Studio 2012 includes a built-in content pipeline that can generate .CMO files from an
+    Visual Studio 2012 and 2013 include a built-in content pipeline that can generate .CMO files from an
     Autodesk FBX, as well as DDS texture files from various bitmap image formats, as part of the
     build process. See the Visual Studio 3D Starter Kit for details.
     http://code.msdn.microsoft.com/windowsapps/Visual-Studio-3D-Starter-455a15f1
@@ -620,7 +625,7 @@ Alpha blending:
     which can be used to draw all opaque parts of all meshes first, then go back and draw all alpha parts of
     all meshes second.
 
-    To indicate the use of ‘straight?alpha vs. ‘premultiplied?alpha blending modes, ModelMesh::pmalpha is set by
+    To indicate the use of ‘straight’ alpha vs. ‘premultiplied’ alpha blending modes, ModelMesh::pmalpha is set by
     the various loaders functions controlled by a default parameter (which defaults false to indicate the
     texture files are using 'straight' alpha). If you make use of DirectXTex's texconv tool with the -pmalpha 
     switch, you should use pmalpha=true instead.
@@ -643,14 +648,14 @@ Coordinate systems:
     convenience, but it impacts how the models are built and/or exported.
 
     The Visual Studio 3D Starter Kit’s .CMO files assume the developer is using right-handed coordinates. DirectXTK’s default
-    parameters assume you are using right-handed coordinates as well, so the ‘ccw?parameter defaults to true. If using a .CMO
-    with left-handed coordinates, you should pass false for the ‘ccw?parameter which will use clockwise winding instead.
-    This makes the geometry visible, but could make textures on the model appear ‘flipped?in U.
+    parameters assume you are using right-handed coordinates as well, so the ‘ccw’ parameter defaults to true. If using a .CMO
+    with left-handed coordinates, you should pass false for the ‘ccw’ parameter which will use clockwise winding instead.
+    This makes the geometry visible, but could make textures on the model appear ‘flipped’ in U.
  
     The legacy DirectX SDK’s .SDKMESH files assume the developer is using left-handed coordinates. DirectXTK’s default parameters
-    assume you are using right-handed coordinates, so the ‘ccw?parameter defaults to false which will use clockwise winding
-    and potentially have the ‘flipped in U?texture problem. If using a .SDKMESH with left-handed coordinates, you should pass
-    true for the ‘ccw?parameter.
+    assume you are using right-handed coordinates, so the ‘ccw’ parameter defaults to false which will use clockwise winding
+    and potentially have the ‘flipped in U’ texture problem. If using a .SDKMESH with left-handed coordinates, you should pass
+    true for the ‘ccw’ parameter.
 
 Feature Level Notes:
 
@@ -666,8 +671,8 @@ Feature Level Notes:
 
 Threading model:
 
-    The ModelMeshPart is tied to a device, but not a device context. This means that Model creation/loading is ‘free threaded?
-    Drawing can be done on the immediate context or by a deferred context, but keep in mind device contexts are not ‘free threaded?
+    The ModelMeshPart is tied to a device, but not a device context. This means that Model creation/loading is ‘free threaded’.
+    Drawing can be done on the immediate context or by a deferred context, but keep in mind device contexts are not ‘free threaded’.
 
 
 
@@ -893,9 +898,102 @@ Further reading:
 
 
 
+----------
+SimpleMath
+----------
+
+SimpleMath.h wraps the DirectXMath SIMD vector/matrix math API with an easier 
+to use C++ interface. It provides the following types, with similar names, 
+methods, and operator overloads to the XNA Game Studio math API:
+
+    - Vector2
+    - Vector3
+    - Vector4
+    - Matrix
+    - Quaternion
+    - Plane
+    - Ray
+    - Color
+
+Why wrap DirectXMath?
+
+DirectXMath provides highly optimized vector and matrix math functions, which 
+take advantage of SSE SIMD intrinsics when compiled for x86/x64, or the ARM 
+NEON instruction set when compiled for an ARM platform such as Windows RT or 
+Windows Phone. The downside of being designed for efficient SIMD usage is that 
+DirectXMath can be somewhat complicated to work with. Developers must be aware 
+of correct type usage (understanding the difference between SIMD register types 
+such as XMVECTOR vs. memory storage types such as XMFLOAT4), must take care to 
+maintain correct alignment for SIMD heap allocations, and must carefully 
+structure their code to avoid accessing individual components from a SIMD 
+register. This complexity is necessary for optimal SIMD performance, but 
+sometimes you just want to get stuff working without so much hassle!
+
+Enter SimpleMath...
+
+These types derive from the equivalent DirectXMath memory storage types (for 
+instance Vector3 is derived from XMFLOAT3), so they can be stored in arbitrary 
+locations without worrying about SIMD alignment, and individual components can 
+be accessed without bothering to call SIMD accessor functions. But unlike 
+XMFLOAT3, the Vector3 type defines a rich set of methods and overloaded 
+operators, so it can be directly manipulated without having to first load its 
+value into an XMVECTOR. Vector3 also defines an operator for automatic 
+conversion to XMVECTOR, so it can be passed directly to methods that were 
+written to use the lower level DirectXMath types.
+
+If that sounds horribly confusing, the short version is that the SimpleMath 
+types pretty much "Just Work" the way you would expect them to.
+
+By now you must be wondering, where is the catch? And of course there is one. 
+SimpleMath hides the complexities of SIMD programming by automatically 
+converting back and forth between memory and SIMD register types, which tends 
+to generate additional load and store instructions. This can add significant 
+overhead compared to the lower level DirectXMath approach, where SIMD loads and 
+stores are under explicit control of the programmer.
+
+You should use SimpleMath if you are:
+
+    - Looking for a C++ math library with similar API to the C# XNA types
+    - Porting existing XNA code from C# to C++
+    - Wanting to optimize for programmer efficiency (simplicity, readability, 
+      development speed) at the expense of runtime efficiency
+
+You should go straight to the underlying DirectXMath API if you:
+
+    - Want to create the fastest possible code
+    - Enjoy the lateral thinking needed to express algorithms in raw SIMD
+
+This need not be a global either/or decision. The SimpleMath types know how to 
+convert themselves to and from the corresponding DirectXMath types, so it is 
+easy to mix and match. You can use SimpleMath for the parts of your program 
+where readability and development time matter most, then drop down to 
+DirectXMath for performance hotspots where runtime efficiency is more important.
+
+
+
 ---------------
 RELEASE HISTORY
 ---------------
+
+July 1, 2013
+    VS 2013 Preview projects added and updates for DirectXMath 3.05 __vectorcall
+    Added use of sRGB WIC metadata for JPEG, PNG, and TIFF
+    SaveToWIC functions updated with new optional setCustomProps parameter and error check with optional targetFormat
+
+May 30, 2013
+    Added more GeometricPrimitives: Cone, Tetrahedron, Octahedron, Dodecahedron, Icosahedron
+    Updated to support loading new metadata from DDS files (if present)
+    Fixed bug with loading of WIC 32bpp RGBE format images
+    Fixed bug when skipping mipmaps in a 1D or 2D array texture DDS file
+
+February 22, 2013
+    Added SimpleMath header
+    Fixed bug that prevented properly overriding EffectFactory::CreateTexture
+    Fixed forceSRGB logic in DDSTextureLoader and WICTextureLoader
+    Break circular reference chains when using SpriteBatch with a setCustomShaders lambda
+    Updated projects with /fp:fast for all configs, /arch:SSE2 for Win32 configs
+    Sensibly named .pdb output files
+    Added WIC_USE_FACTORY_PROXY build option (uses WindowsCodecs.dll entrypoint rather than CoCreateInstance)
 
 January 25, 2013
     GeometricPrimitive support for left-handed coordinates and drawing with custom effects 
