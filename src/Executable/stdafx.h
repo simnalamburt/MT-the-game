@@ -62,4 +62,7 @@ using std::weak_ptr;
 
 // DirectXTK
 #include "DDSTextureLoader.h"
+#include "Effects.h"
+#include "Model.h"
+using DirectX::Model;
 #pragma endregion

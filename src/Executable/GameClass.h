@@ -6,6 +6,8 @@
 #include "CameraClass.h"
 #include "LightClass.h"
 
+
+
 class GameClass : Uncopyable
 {
 private:
@@ -15,6 +17,8 @@ private:
     unique_ptr<ModelClass> model;
     unique_ptr<CameraClass> camera;
     unique_ptr<LightClass> light;
+
+    unique_ptr<Model> gun;
 
 public:
     static const float YFovAngle;

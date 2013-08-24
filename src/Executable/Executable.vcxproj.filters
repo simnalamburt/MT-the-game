@@ -108,6 +108,9 @@
     <None Include="Header.hlsli">
       <Filter>ShaderClass\Shader</Filter>
     </None>
+    <None Include="Assets\Mk 12 SPR.cmo">
+      <Filter>[Assets]</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">

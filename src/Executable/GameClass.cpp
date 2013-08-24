@@ -19,7 +19,9 @@ GameClass::GameClass(_In_ HWND WindowHandle, _In_ size_t ScreenWidth, _In_ size_
     shader ( new ShaderClass(d3d->getDevice()) ),
     model ( new ModelClass(d3d->getDevice()) ), 
     camera ( new CameraClass(d3d->getDevice(), XMFLOAT3(0.0f, 2.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 0.0f)) ),
-    light ( new LightClass(d3d->getDevice(), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f/3.0f, -2.0f/3.0f, -2.0f/3.0f)) )
+    light ( new LightClass(d3d->getDevice(), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f/3.0f, -2.0f/3.0f, -2.0f/3.0f)) ),
+
+    gun ( Model::CreateFromCMO(d3d->getDevice(), L"Assets/Mk 12 SPR.cmo", EffectFactory(d3d->getDevice())) )
 {
     shader->onLoad(d3d->getDeviceContext());
     camera->onLoad(d3d->getDeviceContext());
