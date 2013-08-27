@@ -66,21 +66,13 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Mk 12 SPR.cmo">
-      <Filter>[Assets]</Filter>
-    </None>
-    <None Include="Assets\Pilliar.cmo">
-      <Filter>[Assets]</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="Executable.rc">
       <Filter>[Resources]</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Assets\texture.dds">
+    <None Include="Assets\Box.cmo">
       <Filter>[Assets]</Filter>
-    </Image>
+    </None>
   </ItemGroup>
 </Project>

@@ -12,6 +12,8 @@ private:
 
     unique_ptr<CameraClass> camera;
 
+    unique_ptr<Model> box;
+
 public:
     static const float YFovAngle;
     static const float ZNearest;

@@ -16,7 +16,9 @@ const bool GameClass::VSync = true;
 GameClass::GameClass(_In_ HWND WindowHandle, _In_ size_t ScreenWidth, _In_ size_t ScreenHeight, _In_ bool FullScreen) :
     d3d ( new D3DClass(WindowHandle, ScreenWidth, ScreenHeight, FullScreen, YFovAngle, ZNearest, ZFarthest, VSync) ),
 
-    camera ( new CameraClass(d3d->getDevice(), XMFLOAT3(2.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 0.0f)) )
+    camera ( new CameraClass(d3d->getDevice(), XMFLOAT3(10.0f, 10.0f, 10.0f), XMFLOAT3(0.0f, 0.0f, 0.0f)) ),
+
+    box ( Model::CreateFromCMO(d3d->getDevice(), L"Assets/Box.cmo", EffectFactory(d3d->getDevice())) )
 {
 }
 
@@ -33,8 +35,8 @@ void GameClass::onDraw()
     // Clear the buffer to begin the scene
     d3d->BeginScene();
 
-    
-
+    XMMATRIX world = XMMatrixIdentity();
+    box->Draw(d3d->getDeviceContext(), states, world, camera->getViewMatrix(), d3d->getProjectionMatrix());
 
     // Present the rendered scene to the screen
     d3d->EndScene();

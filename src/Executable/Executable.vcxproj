@@ -148,10 +148,6 @@ exit 0</Command>
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Mk 12 SPR.cmo" />
-    <None Include="Assets\Pilliar.cmo" />
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="Executable.rc" />
   </ItemGroup>
   <ItemGroup>
@@ -163,7 +159,7 @@ exit 0</Command>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Assets\texture.dds" />
+    <None Include="Assets\Box.cmo" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
