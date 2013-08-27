@@ -5,11 +5,6 @@
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 {
-#ifdef _DEBUG
-    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-    // _CrtSetBreakAlloc();
-#endif
-
     try 
     {
         // TODO : 데이터드리븐으로 바꾸기
@@ -47,11 +42,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
         reporter.Report(ErrorReportType::Error);
         ExitProcess(EXIT_FAILURE);
     }
-
-#ifdef _DEBUG
-    FALSE_WARNING ( _CrtCheckMemory() );
-    NONZERO_WARNING ( _CrtDumpMemoryLeaks() );
-#endif
 
     return EXIT_SUCCESS;
 }
