@@ -12,9 +12,6 @@ private:
 
     unique_ptr<CameraClass> camera;
 
-    unique_ptr<Model> gun;
-    unique_ptr<Model> pilliar;
-
 public:
     static const float YFovAngle;
     static const float ZNearest;
