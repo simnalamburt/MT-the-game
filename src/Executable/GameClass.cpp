@@ -21,7 +21,8 @@ GameClass::GameClass(_In_ HWND WindowHandle, _In_ size_t ScreenWidth, _In_ size_
     camera ( new CameraClass(d3d->getDevice(), XMFLOAT3(2.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 0.0f)) ),
     light ( new LightClass(d3d->getDevice(), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f/3.0f, -2.0f/3.0f, -2.0f/3.0f)) ),
 
-    gun ( Model::CreateFromCMO(d3d->getDevice(), L"Assets/Mk 12 SPR.cmo", EffectFactory(d3d->getDevice())) )
+    gun ( Model::CreateFromCMO(d3d->getDevice(), L"Assets/Mk 12 SPR.cmo", EffectFactory(d3d->getDevice())) ),
+    pilliar ( Model::CreateFromCMO(d3d->getDevice(), L"Assets/Pilliar.cmo", EffectFactory(d3d->getDevice())) )
 {
     shader->onLoad(d3d->getDeviceContext());
     camera->onLoad(d3d->getDeviceContext());
@@ -40,10 +41,16 @@ void GameClass::onDraw()
     d3d->BeginScene();
 
     CommonStates states(d3d->getDevice());
-    XMMATRIX world = XMMatrixScaling(0.1f, 0.1f, 0.1f);
-    world *= XMMatrixRotationX(XM_PIDIV2);
-    gun->Draw(d3d->getDeviceContext(), states, world, camera->getViewMatrix(), d3d->getProjectionMatrix());
-    // model->onRender(d3d->getDeviceContext());
+
+    {
+        XMMATRIX world = XMMatrixScaling(0.1f, 0.1f, 0.1f);
+        world *= XMMatrixRotationX(XM_PIDIV2);
+        gun->Draw(d3d->getDeviceContext(), states, world, camera->getViewMatrix(), d3d->getProjectionMatrix());
+    }
+    {
+        XMMATRIX world = XMMatrixScaling(0.02f, 0.02f, 0.02f);
+        pilliar->Draw(d3d->getDeviceContext(), states, world, camera->getViewMatrix(), d3d->getProjectionMatrix());
+    }
 
     // Present the rendered scene to the screen
     d3d->EndScene();

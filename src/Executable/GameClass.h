@@ -19,6 +19,7 @@ private:
     unique_ptr<LightClass> light;
 
     unique_ptr<Model> gun;
+    unique_ptr<Model> pilliar;
 
 public:
     static const float YFovAngle;

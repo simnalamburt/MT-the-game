@@ -111,6 +111,9 @@
     <None Include="Assets\Mk 12 SPR.cmo">
       <Filter>[Assets]</Filter>
     </None>
+    <None Include="Assets\Pilliar.cmo">
+      <Filter>[Assets]</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">

@@ -157,6 +157,7 @@ exit 0</Command>
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Mk 12 SPR.cmo" />
+    <None Include="Assets\Pilliar.cmo" />
     <None Include="Header.hlsli" />
   </ItemGroup>
   <ItemGroup>
