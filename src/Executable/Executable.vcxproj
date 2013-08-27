@@ -131,10 +131,7 @@ exit 0</Command>
     <ClCompile Include="CameraClass.cpp" />
     <ClCompile Include="D3DClass.cpp" />
     <ClCompile Include="GameClass.cpp" />
-    <ClCompile Include="LightClass.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="ModelClass.cpp" />
-    <ClCompile Include="ShaderClass.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -145,46 +142,14 @@ exit 0</Command>
     <ClInclude Include="CameraClass.h" />
     <ClInclude Include="D3DClass.h" />
     <ClInclude Include="GameClass.h" />
-    <ClInclude Include="LightClass.h" />
-    <ClInclude Include="ModelClass.h" />
-    <ClInclude Include="PixelShader.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="ShaderClass.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="SystemClass.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="VertexShader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Mk 12 SPR.cmo" />
     <None Include="Assets\Pilliar.cmo" />
-    <None Include="Header.hlsli" />
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="PixelShader.hlsl">
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename)</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </ObjectFileOutput>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename)</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </ObjectFileOutput>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-    </FxCompile>
-    <FxCompile Include="VertexShader.hlsl">
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename)</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </ObjectFileOutput>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename)</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </ObjectFileOutput>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Executable.rc" />

@@ -1,10 +1,7 @@
 #pragma once
 #include "D3DClass.h"
 
-#include "ShaderClass.h"
-#include "ModelClass.h"
 #include "CameraClass.h"
-#include "LightClass.h"
 
 
 
@@ -13,10 +10,7 @@ class GameClass : Uncopyable
 private:
     unique_ptr<D3DClass> d3d;
 
-    unique_ptr<ShaderClass> shader;
-    unique_ptr<ModelClass> model;
     unique_ptr<CameraClass> camera;
-    unique_ptr<LightClass> light;
 
     unique_ptr<Model> gun;
     unique_ptr<Model> pilliar;

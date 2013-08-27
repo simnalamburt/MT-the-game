@@ -7,23 +7,8 @@
     <Filter Include="D3DClass">
       <UniqueIdentifier>{77910288-1a96-4862-b45c-ff3caed8abcf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ModelClass">
-      <UniqueIdentifier>{a1cdb38e-7439-4d81-a650-4588a4da1849}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ShaderClass">
-      <UniqueIdentifier>{79dcd685-84d9-4f58-9908-536db55f962a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="CameraClass">
       <UniqueIdentifier>{16d72a78-2edd-4030-99f3-0f17f441df71}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ShaderClass\Shader">
-      <UniqueIdentifier>{6c94e561-00ca-4e48-968d-19ae05b17559}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ShaderClass\ShaderOutput">
-      <UniqueIdentifier>{fb73d130-d83c-4a83-9ba9-51cd869f3194}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LightClass">
-      <UniqueIdentifier>{17a00584-bb06-4fac-b006-1bddce58cb4e}</UniqueIdentifier>
     </Filter>
     <Filter Include="[PCH]">
       <UniqueIdentifier>{ebea5dac-1267-4cc0-8fd6-068a15516b42}</UniqueIdentifier>
@@ -50,17 +35,8 @@
     <ClCompile Include="D3DClass.cpp">
       <Filter>D3DClass</Filter>
     </ClCompile>
-    <ClCompile Include="ShaderClass.cpp">
-      <Filter>ShaderClass</Filter>
-    </ClCompile>
-    <ClCompile Include="ModelClass.cpp">
-      <Filter>ModelClass</Filter>
-    </ClCompile>
     <ClCompile Include="CameraClass.cpp">
       <Filter>CameraClass</Filter>
-    </ClCompile>
-    <ClCompile Include="LightClass.cpp">
-      <Filter>LightClass</Filter>
     </ClCompile>
     <ClCompile Include="GameClass.cpp">
       <Filter>GameClass</Filter>
@@ -79,23 +55,8 @@
     <ClInclude Include="D3DClass.h">
       <Filter>D3DClass</Filter>
     </ClInclude>
-    <ClInclude Include="ShaderClass.h">
-      <Filter>ShaderClass</Filter>
-    </ClInclude>
-    <ClInclude Include="ModelClass.h">
-      <Filter>ModelClass</Filter>
-    </ClInclude>
     <ClInclude Include="CameraClass.h">
       <Filter>CameraClass</Filter>
-    </ClInclude>
-    <ClInclude Include="PixelShader.h">
-      <Filter>ShaderClass\ShaderOutput</Filter>
-    </ClInclude>
-    <ClInclude Include="VertexShader.h">
-      <Filter>ShaderClass\ShaderOutput</Filter>
-    </ClInclude>
-    <ClInclude Include="LightClass.h">
-      <Filter>LightClass</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>[Resources]</Filter>
@@ -105,23 +66,12 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Header.hlsli">
-      <Filter>ShaderClass\Shader</Filter>
-    </None>
     <None Include="Assets\Mk 12 SPR.cmo">
       <Filter>[Assets]</Filter>
     </None>
     <None Include="Assets\Pilliar.cmo">
       <Filter>[Assets]</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="PixelShader.hlsl">
-      <Filter>ShaderClass\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="VertexShader.hlsl">
-      <Filter>ShaderClass\Shader</Filter>
-    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Executable.rc">
