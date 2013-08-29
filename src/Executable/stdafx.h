@@ -68,3 +68,5 @@ using std::weak_ptr;
 #include "CommonStates.h"
 using DirectX::Model;
 #pragma endregion
+
+typedef unsigned short ushort;

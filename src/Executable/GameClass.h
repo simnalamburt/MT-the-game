@@ -27,4 +27,5 @@ public:
     void onDraw();
     void onKeyDown(char vkey);
     void onKeyUp(char vkey);
+    void onLButtonDown(ushort x, ushort y);
 };

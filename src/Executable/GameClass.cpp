@@ -82,3 +82,8 @@ void GameClass::onKeyUp(char vkey)
         return;
     }
 }
+
+void GameClass::onLButtonDown(ushort x, ushort y)
+{
+
+}

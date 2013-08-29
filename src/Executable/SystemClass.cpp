@@ -161,6 +161,9 @@ LRESULT CALLBACK SystemClass::MessageHandler(HWND WindowHandle, UINT Message, WP
     case WM_KEYUP:
         game->onKeyUp(wParam);
         return 0;
+    case WM_LBUTTONDOWN:
+        game->onLButtonDown(LOWORD(lParam), LOWORD(lParam));
+        return 0;
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;
